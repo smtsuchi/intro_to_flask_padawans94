@@ -33,3 +33,19 @@ class Post(db.Model):
         self.img_url = img_url
         self.caption = caption
         self.user_id = user_id
+
+    def updatePostInfo(self, title, img_url, caption):
+        self.title = title
+        self.img_url = img_url
+        self.caption = caption
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def saveUpdates(self):
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
