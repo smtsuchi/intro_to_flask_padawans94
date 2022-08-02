@@ -1,7 +1,7 @@
 from flask import Blueprint, redirect, render_template, request, url_for, flash
 from flask_login import current_user, login_required
 from app.ig.forms import PostForm
-from app.models import Post, db
+from app.models import Post, db, User
 
 
 ig = Blueprint('ig', __name__, template_folder='igtemplates')
@@ -26,7 +26,7 @@ def createPost():
 
 @ig.route('/posts')
 def getAllPosts():
-    posts = Post.query.all()
+    posts = current_user.get_followed_posts()
     return render_template('feed.html', posts=posts)
 
 
@@ -68,3 +68,18 @@ def deletePost(post_id):
     post.delete()
     flash('Successfully delete post.', 'success')
     return redirect(url_for('ig.getAllPosts'))
+
+
+@ig.route('/follow/<int:user_id>')
+@login_required
+def followUser(user_id):
+    user = User.query.get(user_id)
+    current_user.follow(user)
+    return redirect(url_for('index'))
+
+@ig.route('/unfollow/<int:user_id>')
+@login_required
+def unfollowUser(user_id):
+    user = User.query.get(user_id)
+    current_user.unfollow(user)
+    return redirect(url_for('index'))

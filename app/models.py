@@ -5,6 +5,16 @@ from werkzeug.security import generate_password_hash
 
 db = SQLAlchemy()
 
+
+# class Followers(db.Model):
+#     follower_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
+#     followed_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
+
+followers = db.Table('followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id')),
+)
+
 # create our Models based off of our ERD
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -12,13 +22,36 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(250), nullable=False)
     post = db.relationship("Post", backref='author', lazy=True)
+    followed = db.relationship("User",
+        primaryjoin = (followers.c.follower_id==id),
+        secondaryjoin = (followers.c.followed_id==id),
+        secondary = followers,
+        backref = db.backref('followers', lazy='dynamic'),
+        lazy = 'dynamic'
+    )
 
     def __init__(self, username, email, password):
         self.username = username
         self.email = email
         self.password = generate_password_hash(password)
 
+    def follow(self, user):
+        self.followed.append(user)
+        db.session.commit()
 
+    def unfollow(self, user):
+        self.followed.remove(user)
+        db.session.commit()
+
+    # get all the posts that I am following PLUS my own
+    def get_followed_posts(self):
+        # all the posts i am following
+        followed = Post.query.join(followers, (Post.user_id == followers.c.followed_id)).filter(followers.c.follower_id == self.id)
+        # get all my posts
+        mine = Post.query.filter_by(user_id = self.id)
+        # put them all together
+        all = followed.union(mine).order_by(Post.date_created.desc())
+        return all
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)

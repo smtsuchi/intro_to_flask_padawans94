@@ -4,25 +4,24 @@
     <a href="/contact">Go to contact Page</a>
 
     {% for x in names %}
-        {% if x['name'] == 'Shoha' %}
+        
             <div class="card" style="width: 18rem;">
-                <img src="{{ x['img'] }}" class="card-img-top" alt="...">
+                <!-- <img src="{{ x['img'] }}" class="card-img-top" alt="..."> -->
                 <div class="card-body">
-                    <h1 class="card-title">{{ x['name'] }}</h1>
-                    <p class="card-text">Age: {{ x.age }}</p>
-                </div>
-            </div>
+                    <h5 class="card-title">{{ x.username }}</h5>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.id == x.id %}
 
-        {% else %}
-            <div class="card" style="width: 18rem;">
-                <img src="{{ x['img'] }}" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">{{ x['name'] }}</h5>
-                    <p class="card-text">Age: {{ x.age }}</p>
+                        {% elif x.flag %}
+                            <a class="btn btn-danger" href="{{ url_for('ig.unfollowUser', user_id=x.id) }}">Unfollow</a>
+                        {% else %}
+                            <a class="btn btn-primary" href="{{ url_for('ig.followUser', user_id=x.id) }}">Follow</a>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
-        {% endif %}
     {% endfor %}
+
 
     {{ hello }}
 
