@@ -83,3 +83,61 @@ def unfollowUser(user_id):
     user = User.query.get(user_id)
     current_user.unfollow(user)
     return redirect(url_for('index'))
+
+
+
+
+
+################# API ROUTES #####################
+@ig.route('/api/posts')
+def getAllPostsAPI():
+    args = request.args
+    pin = args.get('pin')
+    print(pin, type(pin))
+    if pin == '1234':
+
+        posts = Post.query.all()
+
+        my_posts = [p.to_dict() for p in posts]
+        return {'status': 'ok', 'total_results': len(posts), "posts": my_posts}
+    else:
+        return {
+            'status': 'not ok',
+            'code': 'Invalid Pin',
+            'message': 'The pin number was incorrect, please try again.'
+        }
+
+@ig.route('/api/posts/<int:post_id>')
+def getSinglePostsAPI(post_id):
+    post = Post.query.get(post_id)
+    if post:
+        return {
+            'status': 'ok',
+            'total_results': 1,
+            "post": post.to_dict()
+            }
+    else:
+        return {
+            'status': 'not ok',
+            'message': f"A post with the id : {post_id} does not exist."
+        }
+
+
+@ig.route('/api/posts/create', methods=["POST"])
+def createPostAPI():
+    data = request.json # this is coming from POST request Body
+
+    title = data['title']
+    caption = data['caption']
+    user_id = data['user_id']
+    img_url = data['img_url']
+
+    post = Post(title, img_url, caption, user_id)
+    post.save()
+
+    return {
+        'status': 'ok',
+        'message': "Post was successfully created."
+    }
+
+

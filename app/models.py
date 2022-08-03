@@ -43,6 +43,13 @@ class User(db.Model, UserMixin):
         self.followed.remove(user)
         db.session.commit()
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email
+        }
+
     # get all the posts that I am following PLUS my own
     def get_followed_posts(self):
         # all the posts i am following
@@ -82,3 +89,14 @@ class Post(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'caption': self.caption,
+            'img_url': self.img_url,
+            'date_created': self.date_created,
+            'user_id': self.user_id,
+            'author': self.author.username
+        }
