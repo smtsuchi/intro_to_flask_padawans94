@@ -26,7 +26,10 @@ def createPost():
 
 @ig.route('/posts')
 def getAllPosts():
-    posts = current_user.get_followed_posts()
+    if current_user.is_authenticated:
+        posts = current_user.get_followed_posts()
+    else:
+        posts = Post.query.order_by(Post.date_created.desc()).all()
     return render_template('feed.html', posts=posts)
 
 
@@ -37,6 +40,7 @@ def getSinglePost(post_id):
     return render_template('singlepost.html', post=post)
 
 @ig.route('/posts/update/<int:post_id>', methods=["GET", "POST"])
+@login_required
 def updatePost(post_id):
     form = PostForm()
     # post = Post.query.get(post_id)
@@ -60,6 +64,7 @@ def updatePost(post_id):
 
 
 @ig.route('/posts/delete/<int:post_id>')
+@login_required
 def deletePost(post_id):
     post = Post.query.get(post_id)
     if current_user.id != post.user_id:

@@ -14,6 +14,9 @@ from app.models import db
 
 @auth.route('/login', methods = ["GET","POST"])
 def logMeIn():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
     form = LoginForm()
     if request.method == "POST":
         if form.validate():
@@ -27,6 +30,7 @@ def logMeIn():
                 if check_password_hash(user.password, password):
                     flash('You have successfully logged in!', 'success')
                     login_user(user)
+                    return redirect(url_for('index'))
                 else:
                     flash('Incorrect username/password combination.', 'danger')
             else:
@@ -35,6 +39,7 @@ def logMeIn():
     return render_template('login.html', form=form)
 
 @auth.route('/logout')
+@login_required
 def logMeOut():
     flash("Successfully logged out.", 'success')
     logout_user()
@@ -42,6 +47,8 @@ def logMeOut():
 
 @auth.route('/signup', methods=["GET", "POST"])
 def signMeUp():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
     form = UserCreationForm()
     if request.method == "POST":
         print('POST request made')
