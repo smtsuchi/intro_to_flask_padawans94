@@ -15,6 +15,11 @@ followers = db.Table('followers',
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id')),
 )
 
+user_pokemon = db.Table('user_pokemon',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('pokemon_id', db.Integer, db.ForeignKey('pokemon.id')),
+)
+
 # create our Models based off of our ERD
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,6 +32,11 @@ class User(db.Model, UserMixin):
         secondaryjoin = (followers.c.followed_id==id),
         secondary = followers,
         backref = db.backref('followers', lazy='dynamic'),
+        lazy = 'dynamic'
+    )
+    team = db.relationship("Pokemon",
+        secondary = user_pokemon,
+        backref='trainers',
         lazy = 'dynamic'
     )
 
@@ -49,6 +59,9 @@ class User(db.Model, UserMixin):
             'username': self.username,
             'email': self.email
         }
+    
+    def saveToDB(self):
+        db.session.commit()
 
     # get all the posts that I am following PLUS my own
     def get_followed_posts(self):
@@ -59,6 +72,27 @@ class User(db.Model, UserMixin):
         # put them all together
         all = followed.union(mine).order_by(Post.date_created.desc())
         return all
+
+class Pokemon(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique = True)
+    ability = db.Column(db.String)
+    hp = db.Column(db.String)
+    attack = db.Column(db.String)
+    defense = db.Column(db.String)
+    img_url = db.Column(db.String)
+    def __init__(self, name, ability, hp, attack, defense, img_url):
+        self.name = name
+        self.ability = ability
+        self.hp = hp
+        self.attack = attack
+        self.defense = defense
+        self.img_url=img_url
+    
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
