@@ -95,3 +95,29 @@ def battle(opponent):
     op.team.all()
     current_user.team.all()
     
+@app.route('/students')
+def getStudents():
+    return {
+        'class_name': "Padawans-94",
+        'students': [
+            "Andrew W",
+            "Muhammed B",
+            "Brandon N",
+            "Dara C",
+            "Lauren C",
+            "Sydney D",
+            "Brandon G",
+            "Frank V",
+            "Jay Kang",
+            "Dante M",
+            "Dillon M",
+            "Bradlee M",
+            "Michelle M",
+            "Angelina M",
+            "Antonio P",
+            "Michael P",
+            "Charlie R",
+            "Stephen S",
+            "Michael T"
+        ]
+    }
