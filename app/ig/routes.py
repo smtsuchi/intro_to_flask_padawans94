@@ -1,5 +1,6 @@
 from flask import Blueprint, redirect, render_template, request, url_for, flash
 from flask_login import current_user, login_required
+from ..apiauthhelper import token_required
 from app.ig.forms import PostForm
 from app.models import Post, db, User
 
@@ -96,21 +97,21 @@ def unfollowUser(user_id):
 ################# API ROUTES #####################
 @ig.route('/api/posts')
 def getAllPostsAPI():
-    args = request.args
-    pin = args.get('pin')
-    print(pin, type(pin))
-    if pin == '1234':
+    # args = request.args
+    # pin = args.get('pin')
+    # print(pin, type(pin))
+    # if pin == '1234':
 
-        posts = Post.query.all()
+        posts = Post.query.order_by(Post.date_created.desc()).all()
 
         my_posts = [p.to_dict() for p in posts]
         return {'status': 'ok', 'total_results': len(posts), "posts": my_posts}
-    else:
-        return {
-            'status': 'not ok',
-            'code': 'Invalid Pin',
-            'message': 'The pin number was incorrect, please try again.'
-        }
+    # else:
+    #     return {
+    #         'status': 'not ok',
+    #         'code': 'Invalid Pin',
+    #         'message': 'The pin number was incorrect, please try again.'
+    #     }
 
 @ig.route('/api/posts/<int:post_id>')
 def getSinglePostsAPI(post_id):
@@ -129,15 +130,15 @@ def getSinglePostsAPI(post_id):
 
 
 @ig.route('/api/posts/create', methods=["POST"])
-def createPostAPI():
+@token_required
+def createPostAPI(user):
     data = request.json # this is coming from POST request Body
 
     title = data['title']
     caption = data['caption']
-    user_id = data['user_id']
-    img_url = data['img_url']
+    img_url = data['imgUrl']
 
-    post = Post(title, img_url, caption, user_id)
+    post = Post(title, img_url, caption, user.id)
     post.save()
 
     return {
