@@ -146,4 +146,30 @@ def createPostAPI(user):
         'message': "Post was successfully created."
     }
 
+@ig.route('/api/posts/update', methods=["POST"])
+@token_required
+def updatePostAPI(user):
+    data = request.json # this is coming from POST request Body
+
+    post_id = data['postId']
+
+    post = Post.query.get(post_id)
+    if post.user_id != user.id:
+        return {
+            'status': 'not ok',
+            'message': "You cannot update another user's post!"
+        }
+
+    title = data['title']
+    caption = data['caption']
+    img_url = data['imgUrl']
+
+    post.updatePostInfo(title, img_url, caption)
+    post.saveUpdates()
+
+    return {
+        'status': 'ok',
+        'message': "Post was successfully updated."
+    }
+
 

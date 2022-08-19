@@ -91,7 +91,7 @@ def getMyTeam():
 
 @app.route('/battle/<string:opponent>')
 def battle(opponent):
-    op = User.query(name=oppoent)
+    op = User.query(name=opponent)
     op.team.all()
     current_user.team.all()
     
