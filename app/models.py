@@ -21,6 +21,11 @@ user_pokemon = db.Table('user_pokemon',
     db.Column('pokemon_id', db.Integer, db.ForeignKey('pokemon.id')),
 )
 
+cart = db.Table('cart',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('product_id', db.Integer, db.ForeignKey('product.id'))
+)
+
 # create our Models based off of our ERD
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -40,6 +45,11 @@ class User(db.Model, UserMixin):
     team = db.relationship("Pokemon",
         secondary = user_pokemon,
         backref='trainers',
+        lazy = 'dynamic'
+    )
+    cart = db.relationship("Product",
+        secondary = cart,
+        backref = 'cart_users',
         lazy = 'dynamic'
     )
 
@@ -138,4 +148,27 @@ class Post(db.Model):
             'date_created': self.date_created,
             'user_id': self.user_id,
             'author': self.author.username
+        }
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_name = db.Column(db.String(150), nullable=False)
+    img_url = db.Column(db.String)
+    description = db.Column(db.String)
+    price = db.Column(db.Numeric(10,2))
+
+    def __init__(self, name,img, desc, price):
+        self.product_name = name
+        self.img_url = img
+        self.description = desc
+        self.price = price
+
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'product_name': self.product_name,
+            'img_url': self.img_url,
+            'description': self.description,
+            'price': self.price
         }
