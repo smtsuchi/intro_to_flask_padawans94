@@ -74,6 +74,10 @@ class User(db.Model, UserMixin):
             'email': self.email,
             'token': self.apitoken
         }
+
+    def getCart(self):
+        list_of_tuples = db.session.query(cart).filter(cart.c.user_id ==self.id).all()
+        return [Product.query.get(t[1]) for t in list_of_tuples]
     
     def saveToDB(self):
         db.session.commit()
@@ -87,6 +91,14 @@ class User(db.Model, UserMixin):
         # put them all together
         all = followed.union(mine).order_by(Post.date_created.desc())
         return all
+
+    def addToCart(self, product):
+        self.cart.append(product)
+        db.session.commit()
+
+    def removeFromCart(self, product):
+        self.cart.remove(product)
+        db.session.commit()
 
 class Pokemon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
