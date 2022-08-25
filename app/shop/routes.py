@@ -1,7 +1,7 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, redirect
 from ..apiauthhelper import token_required
 from app.models import User, Product, cart
-
+import stripe
 
 shop = Blueprint('shop', __name__)
 
@@ -48,3 +48,31 @@ def removeFromCart(user):
     product = Product.query.get(product_id)
     user.removeFromCart(product)
     return {'status':'ok', 'message':'Successfully removed from cart.'}
+
+
+
+####### STRIP CHECKOUT ROUTE #############
+stripe.api_key = 'sk_test_51LaSpGAOPmNTqh49ym0T8zsBS31YhIt9tXSPkODHp50B2iUSTYs98TOG59hQFGWZYg884LqQKhdhE9pnAQ75V0UF00hit063Z6'
+
+
+@shop.route('/stripe-checkout', methods=["POST"])
+def createCheckoutSession():
+    data = request.form
+    line_items = []
+    for entry in data:
+        line_items.append({
+            'price': entry,
+            'quantity': data[entry]
+        })
+    
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=line_items,
+            mode='payment',
+            success_url='http://localhost:3000' + '?success=true',
+            cancel_url='http://localhost:3000' + '?canceled=true',
+        )
+    except Exception as e:
+        return str(e)
+
+    return redirect(checkout_session.url, code=303)
